@@ -74,6 +74,71 @@ section h3 {
   margin-bottom: 8px;
 }
 
+.activity-card .participants {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed #e0e0e0;
+}
+
+.activity-card .participants h5 {
+  margin: 0 0 8px 0;
+  font-size: 14px;
+  color: #444;
+}
+
+.activity-card .participants ul {
+  list-style: none; /* hide bullet points */
+  padding-left: 0;
+  margin: 0;
+}
+
+.activity-card .participants li {
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #333;
+  font-size: 14px;
+}
+
+/* Botón de eliminar participante (pequeño, sin fondo) */
+.participant-delete {
+  margin-left: auto; /* empuja al borde derecho */
+  background: transparent;
+  border: none;
+  color: #c62828;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 4px;
+}
+.participant-delete:hover {
+  background: rgba(198,40,40,0.08);
+}
+
+/* Badge con iniciales */
+.participant-badge {
+  min-width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg,#3949ab,#1a237e);
+  color: #fff;
+  border-radius: 50%;
+  font-weight: 600;
+  font-size: 12px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+}
+
+/* Pequeño ajuste responsivo para tarjetas con muchas líneas */
+@media (max-width: 480px) {
+  .activity-card .participants li {
+    font-size: 13px;
+  }
+}
+
 .form-group {
   margin-bottom: 15px;
 }

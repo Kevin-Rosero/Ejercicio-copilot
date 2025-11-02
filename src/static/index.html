@@ -19,6 +19,33 @@
           <!-- Activities will be loaded here -->
           <p>Loading activities...</p>
         </div>
+
+        <!-- Template para que el JavaScript genere tarjetas con sección de participantes -->
+        <template id="activity-template">
+          <article class="activity-card" aria-live="polite">
+            <h4 class="activity-title"><!-- title --></h4>
+            <p class="activity-desc"><!-- description --></p>
+            <p class="activity-meta"><strong>When:</strong> <!-- time --> · <strong>Spots:</strong> <!-- spots --></p>
+
+            <div class="participants" aria-label="Participants list">
+              <h5>Participants</h5>
+              <ul class="participants-list">
+                <!--
+                  Cada <li> esperado por JS:
+                  <li>
+                    <span class="participant-badge">AB</span>
+                    <span class="participant-name">Alice Brown</span>
+                  </li>
+                -->
+              </ul>
+            </div>
+
+            <!-- Opcional: botón para inscribirse (gestionado por JS) -->
+            <div class="activity-actions">
+              <!-- ...existing controls (p.ej. signup button) pueden insertarse aquí... -->
+            </div>
+          </article>
+        </template>
       </section>
 
       <section id="signup-container">
