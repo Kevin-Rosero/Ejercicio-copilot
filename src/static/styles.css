@@ -87,8 +87,8 @@ section h3 {
 }
 
 .activity-card .participants ul {
-  list-style: disc;
-  padding-left: 20px;
+  list-style: none; /* hide bullet points */
+  padding-left: 0;
   margin: 0;
 }
 
@@ -99,6 +99,22 @@ section h3 {
   gap: 8px;
   color: #333;
   font-size: 14px;
+}
+
+/* Botón de eliminar participante (pequeño, sin fondo) */
+.participant-delete {
+  margin-left: auto; /* empuja al borde derecho */
+  background: transparent;
+  border: none;
+  color: #c62828;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 4px;
+}
+.participant-delete:hover {
+  background: rgba(198,40,40,0.08);
 }
 
 /* Badge con iniciales */

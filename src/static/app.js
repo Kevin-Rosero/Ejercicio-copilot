@@ -19,7 +19,8 @@ document.addEventListener("DOMContentLoaded", () => {
   // Function to fetch activities from API
   async function fetchActivities() {
     try {
-      const response = await fetch("/activities");
+  // Avoid returning cached/stale responses so the UI shows updates immediately
+  const response = await fetch("/activities", { cache: "no-store" });
       const activities = await response.json();
 
       // Clear loading message / previous content
@@ -55,20 +56,48 @@ document.addEventListener("DOMContentLoaded", () => {
             participantsList.appendChild(li);
           } else {
             participants.forEach((p) => {
-              const li = document.createElement("li");
+                const li = document.createElement("li");
 
-              const badge = document.createElement("span");
-              badge.className = "participant-badge";
-              badge.textContent = getInitials(typeof p === "string" ? p : (p.name || p.email || ""));
-              li.appendChild(badge);
+                const badge = document.createElement("span");
+                badge.className = "participant-badge";
+                badge.textContent = getInitials(typeof p === "string" ? p : (p.name || p.email || ""));
+                li.appendChild(badge);
 
-              const nameSpan = document.createElement("span");
-              nameSpan.className = "participant-name";
-              // Si p es objeto, intenta mostrar nombre o email; si es string, mostrar directamente
-              nameSpan.textContent = typeof p === "string" ? p : (p.name || p.email || "Unknown");
-              li.appendChild(nameSpan);
+                const nameSpan = document.createElement("span");
+                nameSpan.className = "participant-name";
+                // Si p es objeto, intenta mostrar nombre o email; si es string, mostrar directamente
+                const participantEmail = typeof p === "string" ? p : (p.email || p.name || "Unknown");
+                nameSpan.textContent = participantEmail;
+                li.appendChild(nameSpan);
 
-              participantsList.appendChild(li);
+                // Botón de eliminar participante
+                const deleteBtn = document.createElement("button");
+                deleteBtn.className = "participant-delete";
+                deleteBtn.setAttribute("aria-label", `Remove ${participantEmail} from ${name}`);
+                deleteBtn.title = `Remove ${participantEmail}`;
+                deleteBtn.textContent = "×";
+                deleteBtn.addEventListener("click", async (ev) => {
+                  ev.preventDefault();
+                  try {
+                    const resp = await fetch(
+                      `/activities/${encodeURIComponent(name)}/participants?email=${encodeURIComponent(participantEmail)}`,
+                      { method: "DELETE" }
+                    );
+                    const result = await resp.json();
+                    if (resp.ok) {
+                      // refrescar lista de actividades para actualizar UI
+                      fetchActivities();
+                    } else {
+                      console.error("Failed to remove participant:", result);
+                    }
+                  } catch (err) {
+                    console.error("Error removing participant:", err);
+                  }
+                });
+
+                li.appendChild(deleteBtn);
+
+                participantsList.appendChild(li);
             });
           }
         }
@@ -106,12 +135,17 @@ document.addEventListener("DOMContentLoaded", () => {
       const result = await response.json();
 
       if (response.ok) {
+        // Ensure we refresh the activities data before showing success so the UI
+        // reflects the new participant without requiring a full page refresh.
+        try {
+          await fetchActivities();
+        } catch (err) {
+          console.error('Error refreshing activities after signup:', err);
+        }
+
         messageDiv.textContent = result.message;
         messageDiv.className = "success";
         signupForm.reset();
-
-        // Refrescar actividades para mostrar el nuevo participante
-        fetchActivities();
       } else {
         messageDiv.textContent = result.detail || "An error occurred";
         messageDiv.className = "error";
