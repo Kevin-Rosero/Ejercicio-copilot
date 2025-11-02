@@ -3,6 +3,18 @@ document.addEventListener("DOMContentLoaded", () => {
   const activitySelect = document.getElementById("activity");
   const signupForm = document.getElementById("signup-form");
   const messageDiv = document.getElementById("message");
+  const activityTemplate = document.getElementById("activity-template");
+
+  // Helper: obtener iniciales a partir de nombre o email
+  function getInitials(text) {
+    if (!text) return "";
+    // Si es email, toma la parte antes del @
+    const local = text.includes("@") ? text.split("@")[0] : text;
+    // Separa por espacios, puntos, guiones o guiones bajos
+    const parts = local.split(/[\s._-]+/).filter(Boolean);
+    const initials = parts.slice(0, 2).map((p) => p[0].toUpperCase()).join("");
+    return initials || local.slice(0, 2).toUpperCase();
+  }
 
   // Function to fetch activities from API
   async function fetchActivities() {
@@ -10,24 +22,59 @@ document.addEventListener("DOMContentLoaded", () => {
       const response = await fetch("/activities");
       const activities = await response.json();
 
-      // Clear loading message
+      // Clear loading message / previous content
       activitiesList.innerHTML = "";
 
-      // Populate activities list
+      // Reset select (preserve placeholder)
+      activitySelect.innerHTML = '<option value="">-- Select an activity --</option>';
+
+      // Populate activities list using template
       Object.entries(activities).forEach(([name, details]) => {
-        const activityCard = document.createElement("div");
-        activityCard.className = "activity-card";
+        const clone = activityTemplate.content.cloneNode(true);
 
-        const spotsLeft = details.max_participants - details.participants.length;
+        // Fill title, description and meta
+        const titleEl = clone.querySelector(".activity-title");
+        const descEl = clone.querySelector(".activity-desc");
+        const metaEl = clone.querySelector(".activity-meta");
+        if (titleEl) titleEl.textContent = name;
+        if (descEl) descEl.textContent = details.description || "";
+        const spotsLeft = Math.max(0, (details.max_participants || 0) - (details.participants?.length || 0));
+        if (metaEl) {
+          metaEl.innerHTML = `<strong>Schedule:</strong> ${details.schedule || "TBA"} · <strong>Availability:</strong> ${spotsLeft} spots left`;
+        }
 
-        activityCard.innerHTML = `
-          <h4>${name}</h4>
-          <p>${details.description}</p>
-          <p><strong>Schedule:</strong> ${details.schedule}</p>
-          <p><strong>Availability:</strong> ${spotsLeft} spots left</p>
-        `;
+        // Fill participants list
+        const participantsList = clone.querySelector(".participants-list");
+        if (participantsList) {
+          participantsList.innerHTML = "";
+          const participants = Array.isArray(details.participants) ? details.participants : [];
+          if (participants.length === 0) {
+            const li = document.createElement("li");
+            li.textContent = "No participants yet";
+            li.style.fontStyle = "italic";
+            participantsList.appendChild(li);
+          } else {
+            participants.forEach((p) => {
+              const li = document.createElement("li");
 
-        activitiesList.appendChild(activityCard);
+              const badge = document.createElement("span");
+              badge.className = "participant-badge";
+              badge.textContent = getInitials(typeof p === "string" ? p : (p.name || p.email || ""));
+              li.appendChild(badge);
+
+              const nameSpan = document.createElement("span");
+              nameSpan.className = "participant-name";
+              // Si p es objeto, intenta mostrar nombre o email; si es string, mostrar directamente
+              nameSpan.textContent = typeof p === "string" ? p : (p.name || p.email || "Unknown");
+              li.appendChild(nameSpan);
+
+              participantsList.appendChild(li);
+            });
+          }
+        }
+
+        // Append the populated card
+        activitiesList.appendChild(clone);
 
         // Add option to select dropdown
         const option = document.createElement("option");
@@ -62,6 +109,9 @@ document.addEventListener("DOMContentLoaded", () => {
         messageDiv.textContent = result.message;
         messageDiv.className = "success";
         signupForm.reset();
+
+        // Refrescar actividades para mostrar el nuevo participante
+        fetchActivities();
       } else {
         messageDiv.textContent = result.detail || "An error occurred";
         messageDiv.className = "error";
